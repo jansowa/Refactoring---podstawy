@@ -183,7 +183,7 @@ return !condition
 ```
 
 </p>
-</details>  
+</details>
 
 <details>
 <summary>Przypisanie tej samej wartości w instrukcji warunkowej if-else</summary>
@@ -224,9 +224,9 @@ return  condition ? a : b;
 ```
 
 </p>
-</details>  
+</details>
 
-#### 6. Martwy kod, zakomentowany kod, nieużywane importy
+### 6. Martwy kod, zakomentowany kod, nieużywane importy
 Wszystkie te elementy są wskazywane przez IDE. Warto traktować wszystkie z nich jako kod do usunięcia - poza sytuacją, w której komentarz wskazuje coś innego.
 <details>
 <summary>Przykład opisanego kodu w komentarzu</summary>
@@ -240,4 +240,66 @@ Wszystkie te elementy są wskazywane przez IDE. Warto traktować wszystkie z nic
 ```
 
 </p>
-</details>  
+</details>
+
+### 7. Niepotrzebne żądania HTTP, zapytania do bazy danych, iteracje w pętlach, strumieniach, funkcjach .map(), .filter() itp.
+
+<details>
+<summary>Niepotrzebne iteracje w funkcji .map()</summary>
+<p>
+
+```typescript
+const employees: Employee[] = getEmployees(1000);
+const newEmployees = employees.forEach(employee => {
+    if (employee.id === specialEmployeeId) {
+        employee.name = "new name";
+        console.log(employee);
+    }
+});
+```
+
+Funkcja .map() niepotrzebnie iteruje po całej tablicy pomimo tego, że potrzebny element znajdował się na pierwszym miejscu. Wykonało się aż 1000 iteracji.
+```typescript
+const employees: Employee[] = getEmployees(1000);
+const specificEmployee = 
+    employees.find(employee => employee.id === specialEmployeeId);
+specificEmployee.name = "new name";
+console.log(specificEmployee);
+```
+Funkcja .find() po znalezieniu odpowiedniego elementu nie sprawdza już kolejnych. Zyskujemy na tym średnio 500 iteracji.
+
+</p>
+</details>
+
+<details>
+<summary>Niepotrzebne żądania HTTP</summary>
+<p>
+
+```typescript
+function createForm() {
+    let departmentsWithEmployees: DepartmentWithEmployee[] = getDepartmentWithEmployeesAPI();
+    let employees = departmentWithEmployees
+        .map(departmentWithEmployees => departmentWithEmployees.employees);
+    createEmployeesFormList(employees);
+
+    let departmentNames: string[] = getDepartmentNamesAPI();
+    createDepartmentFormList(departmentNames);
+}
+```
+
+Możemy poprawić na wersję z jednym zapytaniem HTTP:
+```typescript
+function createForm() {
+    let departmentsWithEmployees: DepartmentWithEmployee[] = getDepartmentWithEmployeesAPI();
+    let employees = departmentsWithEmployees
+        .map(departmentWithEmployees => departmentWithEmployees.employees);
+    createEmployeesFormList(employees);
+
+    let departmentNames: string[] = departmentsWithEmployees
+        .map(departmentWithEmployees => departmentWithEmployees.departmentName);
+    createDepartmentFormList(departmentNames);
+}
+```
+
+</p>
+</details>
